@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 //          for(int colCount = 0; colCount < terrainCol; colCount++) {
             for (terrainSize_t colCount = 0; colCount < terrainCol; colCount++) {               
 //              affectedArea_t* affected;
-                affectedArea_t* affected;
+                affectedArea_t* affected = (affectedArea_t*) malloc(sizeof(affectedArea_t));
 //              for (int row = 0; row < row + buildRow; row++) {
                 for (terrainSize_t row = rowCount; row < rowCount + buildRow; row++) {
 //                  for (int col = 0; col < col + buildCol; col++) {
@@ -160,7 +160,8 @@ int main(int argc, char** argv) {
                         if( col < terrainCol && row < terrainRow) {
                             printf("%d %d\n", row, col); 
 //                          if(terrain[terrainCol + row + col] != '-' && checkedChar[ 97 - terrain[terrainCol + row + col]] != 0) {
-                            if (terrain[buildCol * row * col] != '-' && checkedChar[terrain[buildCol * row + col] - 97] != 0){
+                            if (terrain[buildCol * row * col] != '-' && checkedChar[terrain[terrainCol * row + col] - 97] != 0){
+                                printf("%c\n", terrain[terrainCol * row * col]);
                                 affected -> affectedBuilds = 0;
                                 affected -> afffectedBuildsSize = 0;
 //                              affected ->affectedBuilds++;
@@ -183,6 +184,7 @@ int main(int argc, char** argv) {
                     }
 //             }
                 }
+                free(affected);
 //          }
             }
 //      }
