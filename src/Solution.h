@@ -2,17 +2,17 @@ enum EXIT_ERR {
     ERR, SUCCESS, INVALID_DATA, FILE_NOT_FOUND
 };
 
-typedef long long size_t;
+typedef long long terrainSize_t;
 
 typedef struct AffectedArea {
-    size_t row;
-    size_t col;
-    int affectedBuilds;
-    int afffectedBuildsSize;
+    terrainSize_t row;
+    terrainSize_t col;
+    terrainSize_t affectedBuilds;
+    terrainSize_t afffectedBuildsSize;
 } affectedArea_t;
 
-void searchBestArea(char* terrain, int terrainRow, int terrainCol, int buildRow, int buildCol);
-int* searchZoneAreaByChar(char* terrain, int terrainRow, int terrainCol);
-affectedArea_t** searchAffectedAreaByBuild( char* terrain, size_t terrainRow, size_t terrainCol, size_t buildRow, size_t buildCol, int* zoneCounter);
+void searchBestArea(char* terrain, terrainSize_t terrainRow, terrainSize_t terrainCol, terrainSize_t buildRow, terrainSize_t buildCol);
+void searchZoneAreaByChar(char* terrain, terrainSize_t terrainRow, terrainSize_t terrainCol, int* zoneCounter);
+void searchAffectedAreaByBuild( char* terrain, terrainSize_t terrainRow, terrainSize_t terrainCol, terrainSize_t buildRow, terrainSize_t buildCol, int* zoneCounter, affectedArea_t** affectedAreaArr);
 affectedArea_t* filterBestArea(affectedArea_t** affectedAreaArr);
 void printResults(affectedArea_t* bestArea, char* terrain, size_t terrainRow, size_t terrainCol);
