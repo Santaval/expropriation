@@ -47,7 +47,6 @@ int main(int argc, char** argv) {
 
 //      if(fread(&terrainRow,txtDoc, 1) == 1 && fread(&terrainRow,txtDoc, 1) == 1 && fread(&terrainRow,txtDoc, 1) == 1 && fread(&terrainRow,txtDoc, 1) == 1) {
         if(fscanf(txtDoc,"%llu %llu %llu %llu", &terrainRow, &terrainCol, &buildRow, &buildCol )) {
-            printf("%llu %llu %llu %llu\n", terrainRow, terrainCol, buildRow, buildCol);
 //          terrain = (char*) malloc(sizeof(char) * (terrainRow*terrainCol) + sizeof(char));
             terrain = (char*) malloc(sizeof(char) * (terrainRow*terrainCol) + sizeof(char));
         
@@ -145,37 +144,38 @@ int main(int argc, char** argv) {
         terrainSize_t pushedAreas = 0;
 //      affectedArea_t** affectedAreaArr[26];
 //      int* checkedChar[26];
-        int* checkedChar[26] = {0};
 //      for(int rowCount = 0; rowCount < terrainRow; rowCount++)  {
         for (terrainSize_t rowCount = 0; rowCount < terrainRow; rowCount++) {
 //          for(int colCount = 0; colCount < terrainCol; colCount++) {
             for (terrainSize_t colCount = 0; colCount < terrainCol; colCount++) {               
 //              affectedArea_t* affected;
-                affectedArea_t* affected = (affectedArea_t*) malloc(sizeof(affectedArea_t));
+                affectedAreaArr[pushedAreas] = (affectedArea_t*) malloc(sizeof(affectedArea_t));
+                int* checkedChar[26] = {0};
 //              for (int row = 0; row < row + buildRow; row++) {
                 for (terrainSize_t row = rowCount; row < rowCount + buildRow; row++) {
 //                  for (int col = 0; col < col + buildCol; col++) {
                     for (terrainSize_t col = colCount; col < colCount + buildCol; col++) {
 //                      if (col < terrainCol && row < terrainRow) {
                         if( col < terrainCol && row < terrainRow) {
-                            printf("%d %d\n", row, col); 
+                            //printf("%d %d\n", row, col); 
 //                          if(terrain[terrainCol + row + col] != '-' && checkedChar[ 97 - terrain[terrainCol + row + col]] != 0) {
-                            if (terrain[buildCol * row * col] != '-' && checkedChar[terrain[terrainCol * row + col] - 97] != 0){
-                                printf("%c\n", terrain[terrainCol * row * col]);
-                                affected -> affectedBuilds = 0;
-                                affected -> afffectedBuildsSize = 0;
+                            if (terrain[buildCol * row * col] != '-' && !checkedChar[terrain[terrainCol * row + col] - 97] == 1){
+                                printf("Checked: %d\n",  checkedChar[terrain[terrainCol * row + col] - 97]);
+                                printf("Char: %c\n", terrain[terrainCol * row * col]);
+                                affectedAreaArr[pushedAreas] -> affectedBuilds = 0;
+                                affectedAreaArr[pushedAreas] -> afffectedBuildsSize = 0;
 //                              affected ->affectedBuilds++;
-                                affected -> affectedBuilds ++;
+                                affectedAreaArr[pushedAreas] -> affectedBuilds += 1;
 //                              affected ->afffectedBuildsSize += zoneCounter[97 - terrain[terrainCol + row + col]];
-                                affected -> afffectedBuildsSize += zoneCounter[terrain[terrainCol + row + col] - 97];
-                                affected -> col = col;
-                                affected -> row = row;
+                                affectedAreaArr[pushedAreas] -> afffectedBuildsSize += zoneCounter[terrain[terrainCol + row + col] - 97];
+                                affectedAreaArr[pushedAreas] -> col = col;
+                                affectedAreaArr[pushedAreas] -> row = row;
 //                              affectedAreaArr[pushedAreas] = affected;
-                                affectedAreaArr[pushedAreas] = affected;
+                                printf("AffectedBuilds: %llu\n", affectedAreaArr[pushedAreas] -> affectedBuilds);
 //                              checkedChar[97 - terrain[terrainCol + row + col]] = 1;
                                 checkedChar[terrain[buildCol * row + col] - 97] = 1;
 //                              pushedAreas ++;
-                                pushedAreas ++;
+                              
 //                         }
                             }
 //                     }
@@ -184,7 +184,9 @@ int main(int argc, char** argv) {
                     }
 //             }
                 }
-                free(affected);
+                puts("-------");
+                pushedAreas ++;
+
 //          }
             }
 //      }
