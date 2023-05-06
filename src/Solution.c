@@ -43,8 +43,6 @@ int main(int argc, char** argv) {
             return ERR;
 //      }
         }
-        puts("Readed");
-
 //      if(fread(&terrainRow,txtDoc, 1) == 1 && fread(&terrainRow,txtDoc, 1) == 1 && fread(&terrainRow,txtDoc, 1) == 1 && fread(&terrainRow,txtDoc, 1) == 1) {
         if(fscanf(txtDoc,"%llu %llu %llu %llu", &terrainRow, &terrainCol, &buildRow, &buildCol )) {
 //          terrain = (char*) malloc(sizeof(char) * (terrainRow*terrainCol) + sizeof(char));
@@ -61,6 +59,7 @@ int main(int argc, char** argv) {
             printMatrix(terrain, terrainRow, terrainCol);
 //          free(terrain);
             free(terrain);
+            fclose(txtDoc);
 //      }
         }
         
@@ -96,16 +95,20 @@ int main(int argc, char** argv) {
 //  void searchBestArea(char* terrain, int terrainRow, int terrainCol, int buildRow, int buildCol) {
     void searchBestArea(char* terrain, terrainSize_t terrainRow, terrainSize_t terrainCol, terrainSize_t buildRow, terrainSize_t buildCol) {
 //      int* zoneCounter = searchZoneAreaByChar(terrain, terrainRow, terrainCol);
-        int* zoneCounter = (int*) malloc(sizeof(int) * 26);
+        int* zoneCounter = (int*) malloc(sizeof(int) * 27);
         searchZoneAreaByChar(terrain, terrainRow, terrainCol, zoneCounter);  
 //      affectedArea_t** affectedAreaArr = searchAffectedAreaByBuild(terrain, terrainRow, terrainCol, buildRow, buildCol, zoneCounter);
         affectedArea_t** affectedAreaArr = (affectedArea_t**) malloc(sizeof(affectedArea_t) * (terrainRow * terrainCol));
-        searchAffectedAreaByBuild(terrain, terrainRow, terrainCol, buildRow, buildCol, zoneCounter, affectedAreaArr);
-        for(int counter = 0; counter < 26; counter++) {
-            printf("%llu ", affectedAreaArr[counter] -> affectedBuilds);
+        for(int counter = 0; counter < terrainRow * terrainCol; counter++) {
+            affectedAreaArr[counter] = NULL;
         } 
-//     affectedArea_t* bestArea = filterBestArea(affectedAreaArr);
+        searchAffectedAreaByBuild(terrain, terrainRow, terrainCol, buildRow, buildCol, zoneCounter, affectedAreaArr);
+        puts("finished");
+//      affectedArea_t* bestArea = filterBestArea(affectedAreaArr);
+        terrainSize_t bestAreaIndex = filterBestArea(affectedAreaArr, buildRow, buildCol, terrainRow, terrainCol);
+        affectedArea_t* bestArea = affectedAreaArr[bestAreaIndex];
 //     markBestArea(bestArea, terrain, terrainRow, terrainCol);
+        markBestArea(bestArea, terrain, buildRow, buildCol, terrainCol);
 //     printResults(bestArea, terrain, terrainRow, terrainCol);
         free(affectedAreaArr);
         free(zoneCounter);
@@ -147,44 +150,42 @@ int main(int argc, char** argv) {
 //      for(int rowCount = 0; rowCount < terrainRow; rowCount++)  {
         for (terrainSize_t rowCount = 0; rowCount < terrainRow; rowCount++) {
 //          for(int colCount = 0; colCount < terrainCol; colCount++) {
-            for (terrainSize_t colCount = 0; colCount < terrainCol; colCount++) {               
+            for (terrainSize_t colCount = 0; colCount < terrainCol; colCount++) {            
 //              affectedArea_t* affected;
+
                 affectedAreaArr[pushedAreas] = (affectedArea_t*) malloc(sizeof(affectedArea_t));
-                int* checkedChar[26] = {0};
+                affectedAreaArr[pushedAreas] -> affectedBuilds = 0;
+                affectedAreaArr[pushedAreas] -> affectedBuildsSize = 0;
+                 affectedAreaArr[pushedAreas] -> cellsAmount = 0;  
+                affectedAreaArr[pushedAreas] -> row = rowCount;
+                affectedAreaArr[pushedAreas] -> col = colCount;
+                int checkedChar[27] = {0};
 //              for (int row = 0; row < row + buildRow; row++) {
                 for (terrainSize_t row = rowCount; row < rowCount + buildRow; row++) {
 //                  for (int col = 0; col < col + buildCol; col++) {
                     for (terrainSize_t col = colCount; col < colCount + buildCol; col++) {
 //                      if (col < terrainCol && row < terrainRow) {
-                        if( col < terrainCol && row < terrainRow) {
-                            //printf("%d %d\n", row, col); 
+                        if( (col < terrainCol  && row < terrainRow )) {
 //                          if(terrain[terrainCol + row + col] != '-' && checkedChar[ 97 - terrain[terrainCol + row + col]] != 0) {
-                            if (terrain[buildCol * row * col] != '-' && !checkedChar[terrain[terrainCol * row + col] - 97] == 1){
-                                printf("Checked: %d\n",  checkedChar[terrain[terrainCol * row + col] - 97]);
-                                printf("Char: %c\n", terrain[terrainCol * row * col]);
-                                affectedAreaArr[pushedAreas] -> affectedBuilds = 0;
-                                affectedAreaArr[pushedAreas] -> afffectedBuildsSize = 0;
+                            if (terrain[terrainCol * row + col] != '-' && (!checkedChar[terrain[terrainCol * row + col] - 97] == 1)){
 //                              affected ->affectedBuilds++;
                                 affectedAreaArr[pushedAreas] -> affectedBuilds += 1;
 //                              affected ->afffectedBuildsSize += zoneCounter[97 - terrain[terrainCol + row + col]];
-                                affectedAreaArr[pushedAreas] -> afffectedBuildsSize += zoneCounter[terrain[terrainCol + row + col] - 97];
-                                affectedAreaArr[pushedAreas] -> col = col;
-                                affectedAreaArr[pushedAreas] -> row = row;
+                                affectedAreaArr[pushedAreas] -> affectedBuildsSize += zoneCounter[terrain[terrainCol * row + col] - 97];
 //                              affectedAreaArr[pushedAreas] = affected;
-                                printf("AffectedBuilds: %llu\n", affectedAreaArr[pushedAreas] -> affectedBuilds);
 //                              checkedChar[97 - terrain[terrainCol + row + col]] = 1;
-                                checkedChar[terrain[buildCol * row + col] - 97] = 1;
+                                checkedChar[terrain[terrainCol * row + col] - 97] = 1;
 //                              pushedAreas ++;
                               
 //                         }
                             }
-//                     }
+//                     }     
+                         affectedAreaArr[pushedAreas] -> cellsAmount++;
                         }
 //                  }
                     }
 //             }
                 }
-                puts("-------");
                 pushedAreas ++;
 
 //          }
@@ -194,36 +195,62 @@ int main(int argc, char** argv) {
 // } 
     }
 
-// affectedArea_t* filterBestArea(affectedArea_t** affectedAreaArr) {
-//     affectedArea_t* bestArea = affectedAreaArr[0];
+//  affectedArea_t* filterBestArea(affectedArea_t** affectedAreaArr) {
+terrainSize_t filterBestArea (affectedArea_t** affectedAreaArr,  terrainSize_t buildRow, terrainSize_t buildCol, terrainSize_t terrainRow, terrainSize_t terrainCol) {
+//  affectedArea_t* bestArea = affectedAreaArr[0];
+    terrainSize_t bestArea = 0;
 //     for(int counter = 0; counter < terrainRow * terrainCol; counter++) {
+    for (terrainSize_t counter = 0; counter < terrainRow * terrainCol; counter++) {
 //         if(affectedAreaArr[counter] != NULL) {
-//             if (affectedAreaArr[counter] -> afffectedBuildsSize < bestArea -> afffectedBuildsSize) {
-//                 bestArea = affectedAreaArr[counter];
+        if (affectedAreaArr[counter] != NULL && affectedAreaArr[counter] -> cellsAmount == buildRow * buildCol) {
+//             if (affectedAreaArr[counter] -> afffectedBuildsSize < bestArea -> affectedBuildsSize) {
+            if (affectedAreaArr[counter] -> affectedBuildsSize < affectedAreaArr[bestArea] -> affectedBuildsSize) {
+                    bestArea = counter;
 //             }
 //         }
+            }
+        }
 //     }
-
+    }
 //     return bestArea;
+    return bestArea;
 // }
+}
 
 // void markBestArea(affectedArea_t* bestArea, char* terrain, size_t buildRow, size_t buildCol) {
+void markBestArea(affectedArea_t* bestArea, char* terrain, terrainSize_t buildRow, terrainSize_t buildCol, terrainSize_t terrainCol) {
 //         for(int row = bestArea -> row; row < row + buildRow; row++) {
+    for (terrainSize_t row = bestArea -> row; row < bestArea ->row + buildRow; row++) {
 //              for(int col = bestArea -> col; col < col + buildCol; col++) {
+        for (terrainSize_t col = bestArea -> col; col < bestArea -> col + buildCol; col++) {
 //                 terrain[terrainCol + row + col] = '*';
+        puts("listo");
+                    terrain[terrainCol * row + col] = '*';
 //              }
 //         }
+        }
+    }
 // }
-
+}
 
 // void printResults(affectedArea_t* bestArea, char* terrain, size_t terrainRow, size_t terrainCol) {
-//     printf("%d\n", bestArea->affectedBuilds);
-
-//        for(int row = 0; row < terrainRow; row++)  {
-//          for(int col = 0; col < terrainCol; col++) {
-//            printf("%c", terrain[terrainCol*row + col]);
-//          }
-//          printf("\n");
-//     }
-
+void printResults(affectedArea_t* bestArea, char* terrain, size_t terrainRow, size_t terrainCol) {
+    //     printf("%d\n", bestArea->affectedBuilds);
+    printf("%d\n", bestArea->affectedBuilds);
+        // or(int row = 0; row < terrainRow; row++)  {
+       for(int row = 0; row < terrainRow; row++)  {
+        // for(int col = 0; col < terrainCol; col++) {
+         for(int col = 0; col < terrainCol; col++) {
+            // printf("%c", terrain[terrainCol*row + col]);
+           printf("%c", terrain[terrainCol*row + col]);
+        //}
+         }
+         // printf("\n");
+         printf("\n");
+    //}
+    }
 // }
+}
+
+
+
